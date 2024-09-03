@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Breast Cancer Detection System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #f4f4f4, #be619f);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 50%;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            margin-top: 150px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .option-select {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .option-select button {
+            margin: 0 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+
+        .option-select button:hover {
+            background-color: #45a049;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        label {
+            margin: 10px 0 5px 0;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="file"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e7f3e7;
+            border-left: 6px solid #4CAF50;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .result p {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .go-back {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .go-back button {
+            background-color: #f44336;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .go-back button:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+    <script>
+        function toggleForm(formType) {
+            const manualForm = document.getElementById('manual-form');
+            const csvForm = document.getElementById('csv-form');
+
+            if (formType === 'manual') {
+                manualForm.style.display = 'block';
+                csvForm.style.display = 'none';
+            } else {
+                manualForm.style.display = 'none';
+                csvForm.style.display = 'block';
+            }
+        }
+
+        function showResult(result) {
+            const forms = document.getElementById('forms');
+            const resultDiv = document.getElementById('result');
+            const resultText = document.getElementById('result-text');
+            const goBack = document.getElementById('go-back');
+
+            forms.style.display = 'none';
+            resultText.innerText = `Prediction: ${result}`;
+            resultDiv.style.display = 'block';
+            goBack.style.display = 'block';
+        }
+
+        function goBack() {
+            const forms = document.getElementById('forms');
+            const resultDiv = document.getElementById('result');
+            const goBack = document.getElementById('go-back');
+
+            forms.style.display = 'block';
+            resultDiv.style.display = 'none';
+            goBack.style.display = 'none';
+        }
+
+        async function handleSubmit(event, formId) {
+            event.preventDefault();
+            const form = document.getElementById(formId);
+            const formData = new FormData(form);
+
+            const response = await fetch(form.action, {
+                method: form.method,
+                body: formData,
+            });
+
+            const result = await response.json();
+            showResult(result.prediction);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('manual-form').style.display = 'none';
+            document.getElementById('csv-form').style.display = 'none';
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Breast Cancer Detection</h1>
+        <div class="option-select">
+            <button onclick="toggleForm('manual')">Enter Values Manually</button>
+            <button onclick="toggleForm('csv')">Upload CSV File</button>
+        </div>
+
+        <div id="forms">
+            <form id="manual-form" action="{% url 'predict' %}" method="post" onsubmit="handleSubmit(event, 'manual-form')">
+                {% csrf_token %}
+                <label for="radius_mean">Radius Mean:</label>
+                <input type="number" id="radius_mean" name="radius_mean" step="any" required>
+
+                <label for="texture_mean">Texture Mean:</label>
+                <input type="number" id="texture_mean" name="texture_mean" step="any" required>
+
+                <label for="smoothness_mean">Smoothness Mean:</label>
+                <input type="number" id="smoothness_mean" name="smoothness_mean" step="any" required>
+
+                <label for="compactness_mean">Compactness Mean:</label>
+                <input type="number" id="compactness_mean" name="compactness_mean" step="any" required>
+
+                <label for="symmetry_mean">Symmetry Mean:</label>
+                <input type="number" id="symmetry_mean" name="symmetry_mean" step="any" required>
+
+                <label for="fractal_dimension_mean">Fractal Dimension Mean:</label>
+                <input type="number" id="fractal_dimension_mean" name="fractal_dimension_mean" step="any" required>
+
+                <label for="radius_se">Radius SE:</label>
+                <input type="number" id="radius_se" name="radius_se" step="any" required>
+
+                <label for="texture_se">Texture SE:</label>
+                <input type="number" id="texture_se" name="texture_se" step="any" required>
+
+                <label for="smoothness_se">Smoothness SE:</label>
+                <input type="number" id="smoothness_se" name="smoothness_se" step="any" required>
+
+                <label for="compactness_se">Compactness SE:</label>
+                <input type="number" id="compactness_se" name="compactness_se" step="any" required>
+
+                <input type="submit" value="Predict">
+            </form>
+
+            <form id="csv-form" action="{% url 'predict_csv' %}" method="post" enctype="multipart/form-data" onsubmit="handleSubmit(event, 'csv-form')">
+                {% csrf_token %}
+                <label for="csv_file">Upload CSV File:</label>
+                <input type="file" id="csv_file" name="csv_file" accept=".csv" required>
+                <input type="submit" value="Predict">
+            </form>
+        </div>
+
+        <div class="result" id="result" style="display: none;">
+            <p id="result-text">Prediction: </p>
+        </div>
+
+        <div class="go-back" id="go-back" style="display: none;">
+            <button onclick="goBack()">Go Back</button>
+        </div>
+    </div>
+</body>
+</html>
